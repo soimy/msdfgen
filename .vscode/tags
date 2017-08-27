@@ -1,0 +1,30 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+PIPE	../test/test_msdf.py	/^from subprocess import Popen, PIPE, call$/;"	kind:namespace	line:7
+Popen	../test/test_msdf.py	/^from subprocess import Popen, PIPE, call$/;"	kind:namespace	line:7
+Runner	../test/test_msdf.py	/^class Runner:$/;"	kind:class	line:17
+__init__	../test/test_msdf.py	/^    def __init__(self):$/;"	kind:member	line:23
+add_fail	../test/test_msdf.py	/^    def add_fail(self, input_path, msg, out_path=None, render_path=None, diff_path=None):$/;"	kind:member	line:29
+add_pass	../test/test_msdf.py	/^    def add_pass(self, input_path, msg, out_path=None, render_path=None, diff_path=None):$/;"	kind:member	line:26
+add_result	../test/test_msdf.py	/^    def add_result(self, passed, input_path, msg, out_path=None, render_path=None, diff_path=None):$/;"	kind:member	line:32
+argparse	../test/test_msdf.py	/^import argparse$/;"	kind:namespace	line:1
+call	../test/test_msdf.py	/^from subprocess import Popen, PIPE, call$/;"	kind:namespace	line:7
+check_imagemagick	../test/test_msdf.py	/^def check_imagemagick():$/;"	kind:function	line:59
+codecs	../test/test_msdf.py	/^import codecs$/;"	kind:namespace	line:5
+fail_count	../test/test_msdf.py	/^    fail_count = 0$/;"	kind:variable	line:19
+get_outputs	../test/test_msdf.py	/^    def get_outputs(self, key):$/;"	kind:member	line:51
+main	../test/test_msdf.py	/^def main():$/;"	kind:function	line:133
+os	../test/test_msdf.py	/^import os$/;"	kind:namespace	line:2
+pass_count	../test/test_msdf.py	/^    pass_count = 0$/;"	kind:variable	line:18
+println	../test/test_msdf.py	/^def println(msg):$/;"	kind:function	line:10
+re	../test/test_msdf.py	/^import re$/;"	kind:namespace	line:3
+results	../test/test_msdf.py	/^    results = []$/;"	kind:variable	line:21
+stop_on_fail	../test/test_msdf.py	/^    stop_on_fail = False$/;"	kind:variable	line:20
+sys	../test/test_msdf.py	/^import sys$/;"	kind:namespace	line:4
+tempfile	../test/test_msdf.py	/^import tempfile$/;"	kind:namespace	line:6
+test_msdf.py	../test/test_msdf.py	1;"	kind:file	line:1
+test_svg	../test/test_msdf.py	/^def test_svg(path, args, runner):$/;"	kind:function	line:68
