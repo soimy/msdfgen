@@ -211,7 +211,9 @@ static bool cmpExtension(const char *path, const char *ext) {
 }
 
 template <typename T>
-static const char * writeOutput(const Bitmap<T> &bitmap, const char *filename, Format format) {
+static const char * writeOutput(const Bitmap<T> &bitmap, const std::string &pnn, Format format) {
+    const char *filename = pnn.size() ? pnn.c_str() : nullptr;
+
     if (filename) {
         if (format == AUTO) {
             if (cmpExtension(filename, ".png")) format = PNG;
@@ -340,7 +342,7 @@ static const char *helpText =
     "\n";
 
 int main(int argc, const char * const *argv) {
-    #define ABORT(msg) { puts(msg); return 1; }
+    #define ABORT(msg) { puts(msg); getchar(); return 1; }
 
     // Parse command line arguments
     enum {
@@ -360,13 +362,14 @@ int main(int argc, const char * const *argv) {
     unsigned int legacyMode = 0;
     Format format = AUTO;
     const char *input = NULL;
-    const char *output = "output.png";
+    std::string outputName = "output.png";
     const char *shapeExport = NULL;
     const char *testRender = NULL;
     const char *testRenderMulti = NULL;
     bool outputSpecified = false;
     int unicode = 0;
     int svgPathIndex = 0;
+    std::string outputPath;
 
     int width = 64, height = 64;
     int testWidth = 0, testHeight = 0;
@@ -400,7 +403,14 @@ int main(int argc, const char * const *argv) {
         const char *arg = argv[argPos];
         #define ARG_CASE(s, p) if (!strcmp(arg, s) && argPos+(p) < argc)
         #define ARG_MODE(s, m) if (!strcmp(arg, s)) { mode = m; ++argPos; continue; }
-        #define SETFORMAT(fmt, ext) do { format = fmt; if (!outputSpecified) output = "output." ext; } while (false)
+        #define SETFORMAT(fmt, ext) \
+            do { \
+                format = fmt; \
+                if (!outputSpecified) \
+                    outputName = "output." ext; \
+                else if (!strchr(outputName.c_str(), '.')) \
+                    outputName += "." ext; \
+            } while (false)
 
         ARG_MODE("sdf", SINGLE)
         ARG_MODE("psdf", PSEUDO)
@@ -421,12 +431,19 @@ int main(int argc, const char * const *argv) {
             inputType = FONT;
             input = argv[argPos+1];
             parseUnicode(unicode, argv[argPos+2]);
+            outputName = argv[argPos + 2];
+            outputSpecified = true;
             argPos += 3;
             continue;
         }
         ARG_CASE("-defineshape", 1) {
             inputType = DESCRIPTION_ARG;
             input = argv[argPos+1];
+            argPos += 2;
+            continue;
+        }
+        ARG_CASE("-path", 1) {
+            outputPath = argv[argPos + 1];
             argPos += 2;
             continue;
         }
@@ -443,13 +460,13 @@ int main(int argc, const char * const *argv) {
             continue;
         }
         ARG_CASE("-o", 1) {
-            output = argv[argPos+1];
+            outputName = argv[argPos+1];
             outputSpecified = true;
             argPos += 2;
             continue;
         }
         ARG_CASE("-stdout", 0) {
-            output = NULL;
+            outputName.clear();
             argPos += 1;
             continue;
         }
@@ -740,7 +757,7 @@ int main(int argc, const char * const *argv) {
     if (mode == METRICS || printMetrics) {
         FILE *out = stdout;
         if (mode == METRICS && outputSpecified)
-            out = fopen(output, "w");
+            out = fopen(outputName.c_str(), "w");
         if (!out)
             ABORT("Failed to write output file.");
         if (shape.inverseYAxis)
@@ -849,7 +866,7 @@ int main(int argc, const char * const *argv) {
     switch (mode) {
         case SINGLE:
         case PSEUDO:
-            error = writeOutput(sdf, output, format);
+            error = writeOutput(sdf, outputPath + outputName, format);
             if (error)
                 ABORT(error);
             if (testRenderMulti || testRender)
@@ -868,7 +885,7 @@ int main(int argc, const char * const *argv) {
             }
             break;
         case MULTI:
-            error = writeOutput(msdf, output, format);
+            error = writeOutput(msdf, outputPath + outputName, format);
             if (error)
                 ABORT(error);
             if (testRenderMulti || testRender)
