@@ -367,6 +367,7 @@ int main(int argc, const char * const *argv) {
     const char *testRender = NULL;
     const char *testRenderMulti = NULL;
     bool outputSpecified = false;
+    bool outputOffsets = false;
     int unicode = 0;
     int svgPathIndex = 0;
     std::string outputPath;
@@ -433,6 +434,7 @@ int main(int argc, const char * const *argv) {
             parseUnicode(unicode, argv[argPos+2]);
             outputName = argv[argPos + 2];
             outputSpecified = true;
+            outputOffsets = true;
             argPos += 3;
             continue;
         }
@@ -752,6 +754,24 @@ int main(int argc, const char * const *argv) {
 
     if (rangeMode == RANGE_PX)
         range = pxRange/min(scale.x, scale.y);
+
+    if (outputOffsets) {
+        std::string extensionless = outputName;
+        size_t extPos = outputName.find_first_of('.');
+        if (extPos != std::string::npos)
+        {
+            extensionless = outputName.substr(0, extPos);
+        }
+        FILE *out = fopen((outputPath + extensionless + ".txt").c_str(), "wb");
+        if (!out)
+            ABORT("Failed to open output file for symbol offsets");
+        if (scale.x != scale.y)
+            ABORT("Unexpected difference between scale.x and scale.y");
+        fwrite(&translate.x, sizeof(float), 1, out);
+        fwrite(&translate.y, sizeof(float), 1, out);
+        fwrite(&scale.x, sizeof(float), 1, out);
+        fclose(out);
+    }
 
     // Print metrics
     if (mode == METRICS || printMetrics) {
