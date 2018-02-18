@@ -433,6 +433,10 @@ int main(int argc, const char * const *argv) {
             input = argv[argPos+1];
             parseUnicode(unicode, argv[argPos+2]);
             outputName = argv[argPos + 2];
+            if (outputName[0] == '0' && (outputName[1] == 'x' || outputName[1] == 'X'))
+            {
+                outputName = outputName.substr(2);
+            }
             outputSpecified = true;
             outputOffsets = true;
             argPos += 3;
@@ -767,9 +771,14 @@ int main(int argc, const char * const *argv) {
             ABORT("Failed to open output file for symbol offsets");
         if (scale.x != scale.y)
             ABORT("Unexpected difference between scale.x and scale.y");
-        fwrite(&translate.x, sizeof(float), 1, out);
-        fwrite(&translate.y, sizeof(float), 1, out);
-        fwrite(&scale.x, sizeof(float), 1, out);
+        float translateX = translate.x;
+        fwrite(&translateX, sizeof(float), 1, out);
+        float translateY = translate.y;
+        fwrite(&translateY, sizeof(float), 1, out);
+        float scaleX = scale.x;
+        fwrite(&scaleX, sizeof(float), 1, out);
+        int pxRangeInteger = lroundl(pxRange);
+        fwrite(&pxRangeInteger, sizeof(int), 1, out);
         fclose(out);
     }
 
