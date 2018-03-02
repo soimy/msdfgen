@@ -1,3 +1,6 @@
+#ifdef PLATFORM_WINDOWS
+#pragma optimize("t", on)
+#endif
 
 #include "edge-segments.h"
 

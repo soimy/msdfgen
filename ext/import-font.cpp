@@ -4,7 +4,6 @@
 #include <cstdlib>
 #include <queue>
 #include <ft2build.h>
-#include <freetype\ftglyph.h>
 #include FT_FREETYPE_H
 #include FT_OUTLINE_H
 
@@ -128,12 +127,6 @@ bool loadGlyph(Shape &output, FontHandle *font, int unicode, double *advance) {
     if (!font)
         return false;
     FT_Error error = FT_Load_Char(font->face, unicode, FT_LOAD_NO_SCALE);
-    FT_Glyph glyph;
-    FT_Get_Glyph(font->face->glyph, &glyph);
-    FT_Glyph_To_Bitmap(&glyph, FT_RENDER_MODE_NORMAL, 0, 1);
-    FT_BitmapGlyph bmapGlyph = (FT_BitmapGlyph)glyph;
-    int left = bmapGlyph->left;
-    int top = bmapGlyph->top;
     if (error)
         return false;
 

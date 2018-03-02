@@ -1,3 +1,6 @@
+#ifdef PLATFORM_WINDOWS
+#pragma optimize("t", on)
+#endif
 
 #include "../msdfgen.h"
 
@@ -116,6 +119,8 @@ struct WindingSpanner: public EdgeSegment::CrossingCallback {
             case FillRule::None:
                 return curSpan != crossings.cend() ? sign(curSpan->second) : 0;
         }
+
+        return 0;
     }
     
 private:
@@ -132,7 +137,7 @@ private:
         return a.first < b.first;
     }
 };
-    
+
 void generateSDF(Bitmap<float> &output, const Shape &shape, double range, const Vector2 &scale, const Vector2 &translate) {
     int contourCount = shape.contours.size();
     int w = output.width(), h = output.height();

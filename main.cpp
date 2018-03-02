@@ -771,12 +771,12 @@ int main(int argc, const char * const *argv) {
             ABORT("Failed to open output file for symbol offsets");
         if (scale.x != scale.y)
             ABORT("Unexpected difference between scale.x and scale.y");
+        float scaleX = scale.x;
+        fwrite(&scaleX, sizeof(float), 1, out);
         float translateX = translate.x;
         fwrite(&translateX, sizeof(float), 1, out);
         float translateY = translate.y;
         fwrite(&translateY, sizeof(float), 1, out);
-        float scaleX = scale.x;
-        fwrite(&scaleX, sizeof(float), 1, out);
         int pxRangeInteger = lroundl(pxRange);
         fwrite(&pxRangeInteger, sizeof(int), 1, out);
         fclose(out);
