@@ -91,10 +91,11 @@ float LinearSegment::signedDistance(Point2 origin) const {
     Vector2 ab = p[1]-p[0];
     param = dotProduct(aq, ab)/dotProduct(ab, ab);
     Vector2 eq = p[param > .5]-origin;
-    double endpointDistance = eq.length();
+    double endpointDistance = eq.squareLength();
     if (param > 0 && param < 1) {
         double orthoDistance = dotProduct(ab.getOrthonormal(false), aq);
-        if (fabs(orthoDistance) < endpointDistance)
+		orthoDistance *= orthoDistance;
+        if (orthoDistance < endpointDistance)
             return orthoDistance;
     }
     return endpointDistance;
@@ -111,9 +112,9 @@ float QuadraticSegment::signedDistance(Point2 origin) const {
     double t[3];
     int solutions = solveCubic(t, a, b, c, d);
 
-    double minDistance = qa.length(); // distance from A
+    double minDistance = qa.squareLength(); // distance from A
     {
-        double distance = (p[2]-origin).length(); // distance from B
+        double distance = (p[2]-origin).squareLength(); // distance from B
         if (distance < minDistance) {
             minDistance = distance;
         }
@@ -121,7 +122,7 @@ float QuadraticSegment::signedDistance(Point2 origin) const {
     for (int i = 0; i < solutions; ++i) {
         if (t[i] > 0 && t[i] < 1) {
             Point2 endpoint = p[0]+2*t[i]*ab+t[i]*t[i]*br;
-            double distance = (endpoint-origin).length();
+            double distance = (endpoint-origin).squareLength();
             if (distance <= minDistance) {
                 minDistance = distance;
             }
@@ -138,10 +139,10 @@ float CubicSegment::signedDistance(Point2 origin) const {
     Vector2 as = (p[3]-p[2])-(p[2]-p[1])-br;
 
     Vector2 epDir = direction(0);
-    double minDistance = qa.length(); // distance from A
+    double minDistance = qa.squareLength(); // distance from A
     {
         epDir = direction(1);
-        double distance = (p[3]-origin).length(); // distance from B
+        double distance = (p[3]-origin).squareLength(); // distance from B
         if (distance < minDistance) {
             minDistance = distance;
         }
@@ -151,7 +152,7 @@ float CubicSegment::signedDistance(Point2 origin) const {
         double t = (double) i/MSDFGEN_CUBIC_SEARCH_STARTS;
         for (int step = 0;; ++step) {
             Vector2 qpt = point(t)-origin;
-            double distance = qpt.length();
+            double distance = qpt.squareLength();
             if (distance < minDistance) {
                 minDistance = distance;
             }

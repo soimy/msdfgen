@@ -113,12 +113,13 @@ void generateSDF(Bitmap<unsigned char> &output, const Shape &shape, double bound
                 std::vector<Contour>::const_iterator contour = shape.contours.begin();
                 for (int i = 0; i < contourCount; ++i, ++contour) {
                     for (std::vector<EdgeSegment>::const_iterator edge = contour->edges.begin(); edge != contour->edges.end(); ++edge) {
-                        double distance = fabs(edge->signedDistance(p));
+                        double distance = edge->signedDistance(p);
                         if (distance < minDistance)
                             minDistance = distance;
                     }
                 }
                 
+				minDistance = sqrt(minDistance);
                 minDistance *= spanner.advanceTo(p.x);
                 output(x, row) = (unsigned char)std::lround(std::clamp<double>((minDistance / range + 0.5) * 0x100, 0, 255));
             }

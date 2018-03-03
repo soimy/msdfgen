@@ -15,6 +15,11 @@ void Vector2::set(double x, double y) {
     Vector2::x = x, Vector2::y = y;
 }
 
+double Vector2::squareLength() const
+{
+	return x*x+y*y;
+}
+
 double Vector2::length() const {
     return sqrt(x*x+y*y);
 }

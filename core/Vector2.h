@@ -23,6 +23,8 @@ struct Vector2 {
     void reset();
     /// Sets individual elements of the vector.
     void set(double x, double y);
+	/// Returns the vector's square length.
+	double squareLength() const;
     /// Returns the vector's length.
     double length() const;
     /// Returns the angle of the vector in radians (atan2).
