@@ -29,7 +29,7 @@
 namespace msdfgen {
 
 /// Generates a conventional single-channel signed distance field.
-void generateSDF(Bitmap<float> &output, const Shape &shape, double range, const Vector2 &scale, const Vector2 &translate);
+void generateSDF(Bitmap<unsigned char> &output, const Shape &shape, double bound_l, double bound_t, double bound_b, double bound_r, double range, const Vector2 &scale, const Vector2 &translate);
 
 /// Generates a single-channel signed pseudo-distance field.
 void generatePseudoSDF(Bitmap<float> &output, const Shape &shape, double range, const Vector2 &scale, const Vector2 &translate);

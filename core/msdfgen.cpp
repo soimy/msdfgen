@@ -138,13 +138,11 @@ private:
     }
 };
 
-void generateSDF(Bitmap<float> &output, const Shape &shape, double range, const Vector2 &scale, const Vector2 &translate) {
+void generateSDF(Bitmap<unsigned char> &output, const Shape &shape, double bound_l, double bound_t, double bound_b, double bound_r, double range, const Vector2 &scale, const Vector2 &translate) {
     int contourCount = shape.contours.size();
     int w = output.width(), h = output.height();
     
     WindingSpanner spanner;
-    double bound_l, bound_t, bound_b, bound_r;
-    shape.bounds(bound_l, bound_b, bound_r, bound_t);
     
 #ifdef MSDFGEN_USE_OPENMP
 #pragma omp parallel
@@ -175,7 +173,7 @@ void generateSDF(Bitmap<float> &output, const Shape &shape, double range, const 
                 }
                 
                 minDistance *= spanner.advanceTo(p.x);
-                output(x, row) = float(minDistance / range + 0.5);
+                output(x, row) = (unsigned char)std::lround(std::clamp<double>((minDistance / range + 0.5) * 0x100, 0, 255));
             }
         }
     }

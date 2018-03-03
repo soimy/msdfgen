@@ -31,6 +31,8 @@ public:
     T & operator()(int x, int y);
     const T & operator()(int x, int y) const;
 
+	T *takeMemoryAway();
+
 private:
     T *content;
     int w, h;

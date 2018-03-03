@@ -43,7 +43,7 @@ struct FtContext {
 };
 
 static Point2 ftPoint2(const FT_Vector &vector) {
-    return Point2(vector.x/64., vector.y/64.);
+    return Point2(vector.x/64, vector.y/64);
 }
 
 static int ftMoveTo(const FT_Vector *to, void *user) {
@@ -139,7 +139,7 @@ bool loadGlyphSlot(Shape &output, FT_GlyphSlot glyph, double *advance) {
     output.contours.clear();
     output.inverseYAxis = false;
     if (advance)
-        *advance = glyph->advance.x/64.;
+        *advance = glyph->advance.x/64;
 
     FtContext context = { };
     context.shape = &output;
