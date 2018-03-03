@@ -151,6 +151,12 @@ static void invertColor(Bitmap<float> &bitmap) {
             bitmap(x, y) = 1.f-bitmap(x, y);
 }
 
+static void invertColor(Bitmap<uint8_t> &bitmap) {
+	for (int y = 0; y < bitmap.height(); ++y)
+		for (int x = 0; x < bitmap.width(); ++x)
+			bitmap(x, y) = 255 - bitmap(x, y);
+}
+
 static bool writeTextBitmap(FILE *file, const float *values, int cols, int rows) {
     for (int row = 0; row < rows; ++row) {
         for (int col = 0; col < cols; ++col) {
@@ -359,7 +365,6 @@ int main(int argc, const char * const *argv) {
         MULTI,
         METRICS
     } mode = MULTI;
-    unsigned int legacyMode = 0;
     Format format = AUTO;
     const char *input = NULL;
     std::string outputName = "output.png";
@@ -474,19 +479,6 @@ int main(int argc, const char * const *argv) {
         ARG_CASE("-stdout", 0) {
             outputName.clear();
             argPos += 1;
-            continue;
-        }
-        ARG_CASE("-legacy", 0) {
-            legacyMode = 1;
-            argPos += 1;
-            // Optional mode specifier
-            if( argPos+1 < argc && parseUnsigned(legacyMode, argv[argPos]) ) {
-                argPos += 1;
-            }
-            if (legacyMode > 2) {
-                ABORT("Invalid legacy mode");
-            }
-            
             continue;
         }
         ARG_CASE("-format", 1) {
@@ -809,62 +801,33 @@ int main(int argc, const char * const *argv) {
     }
 
     // Compute output
-    Bitmap<float> sdf;
+    Bitmap<uint8_t> sdf;
     Bitmap<FloatRGB> msdf;
     switch (mode) {
         case SINGLE: {
-            sdf = Bitmap<float>(width, height);
-            switch( legacyMode ) {
-                case 2:
-                    generateSDF_v2(sdf, shape, range, scale, translate);
-                    break;
-                case 1:
-                    generateSDF_v1(sdf, shape, range, scale, translate);
-                    break;
-                default:
-                    generateSDF(sdf, shape, range, scale, translate);
-            }
+            sdf = Bitmap<uint8_t>(width, height);
+            generateSDF(sdf, shape, bounds.l, bounds.t, bounds.b, bounds.r, range, scale, translate);
             break;
         }
-        case PSEUDO: {
-            sdf = Bitmap<float>(width, height);
-            switch( legacyMode ) {
-                case 2:
-                    generatePseudoSDF_v2(sdf, shape, range, scale, translate);
-                    break;
-                case 1:
-                    generatePseudoSDF_v1(sdf, shape, range, scale, translate);
-                    break;
-                default:
-                    generatePseudoSDF(sdf, shape, range, scale, translate);
-            }
-            break;
-        }
-        case MULTI: {
-            if (!skipColoring)
-                edgeColoringSimple(shape, angleThreshold, coloringSeed);
-            if (edgeAssignment)
-                parseColoring(shape, edgeAssignment);
-            msdf = Bitmap<FloatRGB>(width, height);
-            switch( legacyMode ) {
-                case 2:
-                    generateMSDF_v2(msdf, shape, range, scale, translate, edgeThreshold);
-                    break;
-                case 1:
-                    generateMSDF_v1(msdf, shape, range, scale, translate, edgeThreshold);
-                    break;
-                default:
-                    generateMSDF(msdf, shape, range, scale, translate, edgeThreshold);
-                    break;
-            }
-            break;
-        }
+        //case PSEUDO:
+        //    generatePseudoSDF(sdf, shape, range, scale, translate);
+        //    break;
+        //}
+        //case MULTI: {
+        //    if (!skipColoring)
+        //        edgeColoringSimple(shape, angleThreshold, coloringSeed);
+        //    if (edgeAssignment)
+        //        parseColoring(shape, edgeAssignment);
+        //    msdf = Bitmap<FloatRGB>(width, height);
+        //    generateMSDF(msdf, shape, range, scale, translate, edgeThreshold);
+        //    break;
+        //}
         default:
             break;
     }
 
     // This guess doesn't work when using fill rules, so skip it.
-    if (orientation == GUESS && (legacyMode == 1 || legacyMode == 2)) {
+    if (orientation == GUESS) {
         // Get sign of signed distance outside bounds
         Point2 p(bounds.l-(bounds.r-bounds.l)-1, bounds.b-(bounds.t-bounds.b)-1);
         double dummy;
@@ -894,44 +857,44 @@ int main(int argc, const char * const *argv) {
     const char *error = NULL;
     switch (mode) {
         case SINGLE:
-        case PSEUDO:
-            error = writeOutput(sdf, outputPath + outputName, format);
-            if (error)
-                ABORT(error);
-            if (testRenderMulti || testRender)
-                simulate8bit(sdf);
-            if (testRenderMulti) {
-                Bitmap<FloatRGB> render(testWidthM, testHeightM);
-                renderSDF(render, sdf, avgScale*range);
-                if (!savePng(render, testRenderMulti))
-                    puts("Failed to write test render file.");
-            }
-            if (testRender) {
-                Bitmap<float> render(testWidth, testHeight);
-                renderSDF(render, sdf, avgScale*range);
-                if (!savePng(render, testRender))
-                    puts("Failed to write test render file.");
-            }
-            break;
-        case MULTI:
-            error = writeOutput(msdf, outputPath + outputName, format);
-            if (error)
-                ABORT(error);
-            if (testRenderMulti || testRender)
-                simulate8bit(msdf);
-            if (testRenderMulti) {
-                Bitmap<FloatRGB> render(testWidthM, testHeightM);
-                renderSDF(render, msdf, avgScale*range);
-                if (!savePng(render, testRenderMulti))
-                    puts("Failed to write test render file.");
-            }
-            if (testRender) {
-                Bitmap<float> render(testWidth, testHeight);
-                renderSDF(render, msdf, avgScale*range);
-                if (!savePng(render, testRender))
-                    ABORT("Failed to write test render file.");
-            }
-            break;
+        //case PSEUDO:
+        //    error = writeOutput(sdf, outputPath + outputName, format);
+        //    if (error)
+        //        ABORT(error);
+        //    if (testRenderMulti || testRender)
+        //        simulate8bit(sdf);
+        //    if (testRenderMulti) {
+        //        Bitmap<FloatRGB> render(testWidthM, testHeightM);
+        //        renderSDF(render, sdf, avgScale*range);
+        //        if (!savePng(render, testRenderMulti))
+        //            puts("Failed to write test render file.");
+        //    }
+        //    if (testRender) {
+        //        Bitmap<float> render(testWidth, testHeight);
+        //        renderSDF(render, sdf, avgScale*range);
+        //        if (!savePng(render, testRender))
+        //            puts("Failed to write test render file.");
+        //    }
+        //    break;
+        //case MULTI:
+        //    error = writeOutput(msdf, outputPath + outputName, format);
+        //    if (error)
+        //        ABORT(error);
+        //    if (testRenderMulti || testRender)
+        //        simulate8bit(msdf);
+        //    if (testRenderMulti) {
+        //        Bitmap<FloatRGB> render(testWidthM, testHeightM);
+        //        renderSDF(render, msdf, avgScale*range);
+        //        if (!savePng(render, testRenderMulti))
+        //            puts("Failed to write test render file.");
+        //    }
+        //    if (testRender) {
+        //        Bitmap<float> render(testWidth, testHeight);
+        //        renderSDF(render, msdf, avgScale*range);
+        //        if (!savePng(render, testRender))
+        //            ABORT("Failed to write test render file.");
+        //    }
+        //    break;
         default:
             break;
     }
