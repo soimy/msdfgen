@@ -33,7 +33,7 @@ public:
 	LinearSegment(Point2 p0, Point2 p1);
 	Point2 point(double param) const;
 	Vector2 direction(double param) const;
-	SignedDistance signedDistance(Point2 origin, double &param) const;
+	float signedDistance(Point2 origin) const;
 	void bounds(double &l, double &b, double &r, double &t) const;
 
 	void moveStartPoint(Point2 to);
@@ -55,7 +55,7 @@ public:
 	QuadraticSegment(Point2 p0, Point2 p1, Point2 p2);
 	Point2 point(double param) const;
 	Vector2 direction(double param) const;
-	SignedDistance signedDistance(Point2 origin, double &param) const;
+	float signedDistance(Point2 origin) const;
 	void bounds(double &l, double &b, double &r, double &t) const;
 
 	void moveStartPoint(Point2 to);
@@ -77,7 +77,7 @@ public:
 	CubicSegment(Point2 p0, Point2 p1, Point2 p2, Point2 p3);
 	Point2 point(double param) const;
 	Vector2 direction(double param) const;
-	SignedDistance signedDistance(Point2 origin, double &param) const;
+	float signedDistance(Point2 origin) const;
 	void bounds(double &l, double &b, double &r, double &t) const;
 
 	void moveStartPoint(Point2 to);
@@ -135,9 +135,9 @@ public:
 		RETBYTYPE(direction, param);
 	}
 	/// Returns the minimum signed distance between origin and the edge.
-	SignedDistance signedDistance(Point2 origin, double &param) const
+	float signedDistance(Point2 origin) const
 	{
-		RETBYTYPE(signedDistance, origin, param);
+		RETBYTYPE(signedDistance, origin);
 	}
 	/// Converts a previously retrieved signed distance from origin to pseudo-distance.
 	//void distanceToPseudoDistance(SignedDistance &distance, Point2 origin, double param) const;
