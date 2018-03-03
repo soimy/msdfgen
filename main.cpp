@@ -608,12 +608,6 @@ int main(int argc, const char * const *argv) {
             argPos += 2;
             continue;
         }
-        ARG_CASE("-tolerance", 1) {
-        	if (!parseDouble(Vector2::Epsilon, argv[argPos+1]) || Vector2::Epsilon < 0 )
-        		ABORT("Invalid Tolerance value. Use -tolerance <N> with a value >= 0.0.");
-        	argPos += 2;
-        	continue;
-        }
         ARG_CASE("-help", 0)
             ABORT(helpText);
         printf("Unknown setting or insufficient parameters: %s\n", arg);
@@ -662,7 +656,7 @@ int main(int argc, const char * const *argv) {
     if (!shape.validate())
         ABORT("The geometry of the loaded shape is invalid.");
     shape.normalize();
-    if (yFlip)
+    if (!yFlip)
         shape.inverseYAxis = !shape.inverseYAxis;
 
     double avgScale = .5*(scale.x+scale.y);
@@ -784,15 +778,14 @@ int main(int argc, const char * const *argv) {
     if (orientation == GUESS) {
         // Get sign of signed distance outside bounds
         Point2 p(bounds.l-(bounds.r-bounds.l)-1, bounds.b-(bounds.t-bounds.b)-1);
-        double dummy;
-        SignedDistance minDistance;
+		float minDistance = DBL_MAX;
         for (std::vector<Contour>::const_iterator contour = shape.contours.begin(); contour != shape.contours.end(); ++contour)
             for (std::vector<EdgeSegment>::const_iterator edge = contour->edges.begin(); edge != contour->edges.end(); ++edge) {
-                SignedDistance distance = edge->signedDistance(p, dummy);
+                float distance = edge->signedDistance(p);
                 if (distance < minDistance)
                     minDistance = distance;
             }
-        orientation = minDistance.distance <= 0 ? KEEP : REVERSE;
+        orientation = minDistance <= 0 ? KEEP : REVERSE;
     }
     if (orientation == REVERSE) {
         invertColor(sdf);
@@ -802,25 +795,25 @@ int main(int argc, const char * const *argv) {
     const char *error = NULL;
     switch (mode) {
         case SINGLE:
-        //case PSEUDO:
-        //    error = writeOutput(sdf, outputPath + outputName, format);
-        //    if (error)
-        //        ABORT(error);
-        //    if (testRenderMulti || testRender)
-        //        simulate8bit(sdf);
-        //    if (testRenderMulti) {
-        //        Bitmap<FloatRGB> render(testWidthM, testHeightM);
-        //        renderSDF(render, sdf, avgScale*range);
-        //        if (!savePng(render, testRenderMulti))
-        //            puts("Failed to write test render file.");
-        //    }
+        case PSEUDO:
+            error = writeOutput(sdf, outputPath + outputName, format);
+            if (error)
+                ABORT(error);
+            //if (testRenderMulti || testRender)
+            //    simulate8bit(sdf);
+            //if (testRenderMulti) {
+            //    Bitmap<FloatRGB> render(testWidthM, testHeightM);
+            //    renderSDF(render, sdf, avgScale*range);
+            //    if (!savePng(render, testRenderMulti))
+            //        puts("Failed to write test render file.");
+            //}
         //    if (testRender) {
         //        Bitmap<float> render(testWidth, testHeight);
         //        renderSDF(render, sdf, avgScale*range);
         //        if (!savePng(render, testRender))
         //            puts("Failed to write test render file.");
         //    }
-        //    break;
+            break;
         //case MULTI:
         //    error = writeOutput(msdf, outputPath + outputName, format);
         //    if (error)

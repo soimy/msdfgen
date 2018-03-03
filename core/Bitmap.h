@@ -32,6 +32,7 @@ public:
     const T & operator()(int x, int y) const;
 
 	T *takeMemoryAway();
+	const T *contentMemory() const;
 
 private:
     T *content;
