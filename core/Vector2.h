@@ -13,7 +13,7 @@ namespace msdfgen {
 */
 struct Vector2 {
 
-    static double Epsilon;
+    static constexpr double Epsilon = 0.01;
     
     double x, y;
 

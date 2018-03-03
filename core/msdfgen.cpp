@@ -19,7 +19,7 @@ struct MultiDistance {
 /// A utility structure for holding winding spans for a single horizontal scanline.
 /// First initialize a row by calling collect(), then use advance() to walk the row
 /// and determine "inside"-ness as you go.
-struct WindingSpanner: public EdgeSegment::CrossingCallback {
+struct WindingSpanner: public CrossingCallback {
     
     std::vector<std::pair<double, int>> crossings;
     
@@ -33,8 +33,8 @@ struct WindingSpanner: public EdgeSegment::CrossingCallback {
         fillRule = shape.fillRule;
         crossings.clear();
         for (std::vector<Contour>::const_iterator contour = shape.contours.cbegin(); contour != shape.contours.cend(); ++contour) {
-            for (std::vector<EdgeHolder>::const_iterator e = contour->edges.cbegin(); e != contour->edges.cend(); ++e) {
-                (*e)->crossings(p, this);
+            for (std::vector<EdgeSegment>::const_iterator e = contour->edges.cbegin(); e != contour->edges.cend(); ++e) {
+                e->crossings(p, this);
             }
         }
         
@@ -112,9 +112,9 @@ void generateSDF(Bitmap<unsigned char> &output, const Shape &shape, double bound
                 
                 std::vector<Contour>::const_iterator contour = shape.contours.begin();
                 for (int i = 0; i < contourCount; ++i, ++contour) {
-                    for (std::vector<EdgeHolder>::const_iterator edge = contour->edges.begin(); edge != contour->edges.end(); ++edge) {
+                    for (std::vector<EdgeSegment>::const_iterator edge = contour->edges.begin(); edge != contour->edges.end(); ++edge) {
                         double dummy;
-                        double distance = fabs((*edge)->signedDistance(p, dummy).distance);
+                        double distance = fabs(edge->signedDistance(p, dummy).distance);
                         if (distance < minDistance)
                             minDistance = distance;
                     }

@@ -9,38 +9,38 @@
 
 namespace msdfgen {
 
-void EdgeSegment::distanceToPseudoDistance(SignedDistance &distance, Point2 origin, double param) const {
-    if (param < 0) {
-        Vector2 dir = direction(0).normalize();
-        Vector2 aq = origin-point(0);
-        double ts = dotProduct(aq, dir);
-        if (ts < 0) {
-            double pseudoDistance = crossProduct(aq, dir);
-            if (fabs(pseudoDistance) <= fabs(distance.distance)) {
-                distance.distance = pseudoDistance;
-                distance.dot = 0;
-            }
-        }
-    } else if (param > 1) {
-        Vector2 dir = direction(1).normalize();
-        Vector2 bq = origin-point(1);
-        double ts = dotProduct(bq, dir);
-        if (ts > 0) {
-            double pseudoDistance = crossProduct(bq, dir);
-            if (fabs(pseudoDistance) <= fabs(distance.distance)) {
-                distance.distance = pseudoDistance;
-                distance.dot = 0;
-            }
-        }
-    }
-}
+//void EdgeSegment::distanceToPseudoDistance(SignedDistance &distance, Point2 origin, double param) const {
+//    if (param < 0) {
+//        Vector2 dir = direction(0).normalize();
+//        Vector2 aq = origin-point(0);
+//        double ts = dotProduct(aq, dir);
+//        if (ts < 0) {
+//            double pseudoDistance = crossProduct(aq, dir);
+//            if (fabs(pseudoDistance) <= fabs(distance.distance)) {
+//                distance.distance = pseudoDistance;
+//                distance.dot = 0;
+//            }
+//        }
+//    } else if (param > 1) {
+//        Vector2 dir = direction(1).normalize();
+//        Vector2 bq = origin-point(1);
+//        double ts = dotProduct(bq, dir);
+//        if (ts > 0) {
+//            double pseudoDistance = crossProduct(bq, dir);
+//            if (fabs(pseudoDistance) <= fabs(distance.distance)) {
+//                distance.distance = pseudoDistance;
+//                distance.dot = 0;
+//            }
+//        }
+//    }
+//}
 
-LinearSegment::LinearSegment(Point2 p0, Point2 p1, EdgeColor edgeColor) : EdgeSegment(edgeColor) {
+LinearSegment::LinearSegment(Point2 p0, Point2 p1) {
     p[0] = p0;
     p[1] = p1;
 }
 
-QuadraticSegment::QuadraticSegment(Point2 p0, Point2 p1, Point2 p2, EdgeColor edgeColor) : EdgeSegment(edgeColor) {
+QuadraticSegment::QuadraticSegment(Point2 p0, Point2 p1, Point2 p2) {
     if (p1 == p0 || p1 == p2)
         p1 = 0.5*(p0+p2);
     p[0] = p0;
@@ -48,23 +48,11 @@ QuadraticSegment::QuadraticSegment(Point2 p0, Point2 p1, Point2 p2, EdgeColor ed
     p[2] = p2;
 }
 
-CubicSegment::CubicSegment(Point2 p0, Point2 p1, Point2 p2, Point2 p3, EdgeColor edgeColor) : EdgeSegment(edgeColor) {
+CubicSegment::CubicSegment(Point2 p0, Point2 p1, Point2 p2, Point2 p3) {
     p[0] = p0;
     p[1] = p1;
     p[2] = p2;
     p[3] = p3;
-}
-
-LinearSegment * LinearSegment::clone() const {
-    return new LinearSegment(p[0], p[1], color);
-}
-
-QuadraticSegment * QuadraticSegment::clone() const {
-    return new QuadraticSegment(p[0], p[1], p[2], color);
-}
-
-CubicSegment * CubicSegment::clone() const {
-    return new CubicSegment(p[0], p[1], p[2], p[3], color);
 }
 
 Point2 LinearSegment::point(double param) const {
@@ -278,25 +266,25 @@ void CubicSegment::moveEndPoint(Point2 to) {
     p[3] = to;
 }
 
-void LinearSegment::splitInThirds(EdgeSegment *&part1, EdgeSegment *&part2, EdgeSegment *&part3) const {
-    part1 = new LinearSegment(p[0], point(1/3.), color);
-    part2 = new LinearSegment(point(1/3.), point(2/3.), color);
-    part3 = new LinearSegment(point(2/3.), p[1], color);
+void LinearSegment::splitInThirds(EdgeSegment &part1, EdgeSegment &part2, EdgeSegment &part3) const {
+    part1 = EdgeSegment(LinearSegment(p[0], point(1/3.)));
+    part2 = EdgeSegment(LinearSegment(point(1/3.), point(2/3.)));
+    part3 = EdgeSegment(LinearSegment(point(2/3.), p[1]));
 }
 
-void QuadraticSegment::splitInThirds(EdgeSegment *&part1, EdgeSegment *&part2, EdgeSegment *&part3) const {
-    part1 = new QuadraticSegment(p[0], mix(p[0], p[1], 1/3.), point(1/3.), color);
-    part2 = new QuadraticSegment(point(1/3.), mix(mix(p[0], p[1], 5/9.), mix(p[1], p[2], 4/9.), .5), point(2/3.), color);
-    part3 = new QuadraticSegment(point(2/3.), mix(p[1], p[2], 2/3.), p[2], color);
+void QuadraticSegment::splitInThirds(EdgeSegment &part1, EdgeSegment &part2, EdgeSegment &part3) const {
+    part1 = EdgeSegment(QuadraticSegment(p[0], mix(p[0], p[1], 1/3.), point(1/3.)));
+    part2 = EdgeSegment(QuadraticSegment(point(1/3.), mix(mix(p[0], p[1], 5/9.), mix(p[1], p[2], 4/9.), .5), point(2/3.)));
+    part3 = EdgeSegment(QuadraticSegment(point(2/3.), mix(p[1], p[2], 2/3.), p[2]));
 }
 
-void CubicSegment::splitInThirds(EdgeSegment *&part1, EdgeSegment *&part2, EdgeSegment *&part3) const {
-    part1 = new CubicSegment(p[0], p[0] == p[1] ? p[0] : mix(p[0], p[1], 1/3.), mix(mix(p[0], p[1], 1/3.), mix(p[1], p[2], 1/3.), 1/3.), point(1/3.), color);
-    part2 = new CubicSegment(point(1/3.),
+void CubicSegment::splitInThirds(EdgeSegment &part1, EdgeSegment &part2, EdgeSegment &part3) const {
+    part1 = EdgeSegment(CubicSegment(p[0], p[0] == p[1] ? p[0] : mix(p[0], p[1], 1/3.), mix(mix(p[0], p[1], 1/3.), mix(p[1], p[2], 1/3.), 1/3.), point(1/3.)));
+    part2 = EdgeSegment(CubicSegment(point(1/3.),
         mix(mix(mix(p[0], p[1], 1/3.), mix(p[1], p[2], 1/3.), 1/3.), mix(mix(p[1], p[2], 1/3.), mix(p[2], p[3], 1/3.), 1/3.), 2/3.),
         mix(mix(mix(p[0], p[1], 2/3.), mix(p[1], p[2], 2/3.), 2/3.), mix(mix(p[1], p[2], 2/3.), mix(p[2], p[3], 2/3.), 2/3.), 1/3.),
-        point(2/3.), color);
-    part3 = new CubicSegment(point(2/3.), mix(mix(p[1], p[2], 2/3.), mix(p[2], p[3], 2/3.), 2/3.), p[2] == p[3] ? p[3] : mix(p[2], p[3], 2/3.), p[3], color);
+        point(2/3.)));
+    part3 = EdgeSegment(CubicSegment(point(2/3.), mix(mix(p[1], p[2], 2/3.), mix(p[2], p[3], 2/3.), 2/3.), p[2] == p[3] ? p[3] : mix(p[2], p[3], 2/3.), p[3]));
 }
     
 bool LinearSegment::isDegenerate() const {
@@ -316,7 +304,7 @@ bool CubicSegment::isDegenerate() const {
 ///  0 = no intersection or co-linear
 /// +1 = intersection increasing in the Y axis
 /// -1 = intersection decreasing in the Y axis
-static int crossLine(const Point2& r, const Point2& p0, const Point2& p1, EdgeSegment::CrossingCallback* cb) {
+static int crossLine(const Point2& r, const Point2& p0, const Point2& p1, CrossingCallback* cb) {
     if (r.y < min(p0.y, p1.y))
         return 0;
     if (r.y >= max(p0.y, p1.y))
@@ -340,7 +328,7 @@ static int crossLine(const Point2& r, const Point2& p0, const Point2& p1, EdgeSe
 ///  0 = no intersection or co-linear
 /// +1 = for each intersection increasing in the Y axis
 /// -1 = for each intersection decreasing in the Y axis
-static int crossQuad(const Point2& r, const Point2& p0, const Point2& c0, const Point2& p1, int depth, EdgeSegment::CrossingCallback* cb) {
+static int crossQuad(const Point2& r, const Point2& p0, const Point2& c0, const Point2& p1, int depth, CrossingCallback* cb) {
     if (r.y < min(p0.y, min(c0.y, p1.y)))
         return 0;
     if (r.y > max(p0.y, max(c0.y, p1.y)))
@@ -368,7 +356,7 @@ static int crossQuad(const Point2& r, const Point2& p0, const Point2& c0, const 
 ///  0 = no intersection or co-linear
 /// +1 = for each intersection increasing in the Y axis
 /// -1 = for each intersection decreasing in the Y axis
-static int crossCubic(const Point2& r, const Point2& p0, const Point2& c0, const Point2& c1, const Point2& p1, int depth, EdgeSegment::CrossingCallback* cb) {
+static int crossCubic(const Point2& r, const Point2& p0, const Point2& c0, const Point2& c1, const Point2& p1, int depth, CrossingCallback* cb) {
     if (r.y < min(p0.y, min(c0.y, min(c1.y, p1.y))))
         return 0;
     if (r.y > max(p0.y, max(c0.y, max(c1.y, p1.y))))

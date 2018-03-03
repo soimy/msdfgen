@@ -144,11 +144,9 @@
     <ClInclude Include="core\edge-coloring.h" />
     <ClInclude Include="core\edge-segments.h" />
     <ClInclude Include="core\EdgeColor.h" />
-    <ClInclude Include="core\EdgeHolder.h" />
     <ClInclude Include="core\equation-solver.h" />
     <ClInclude Include="core\render-sdf.h" />
     <ClInclude Include="core\save-bmp.h" />
-    <ClInclude Include="core\shape-description.h" />
     <ClInclude Include="core\Shape.h" />
     <ClInclude Include="core\SignedDistance.h" />
     <ClInclude Include="core\Vector2.h" />
@@ -164,11 +162,9 @@
     <ClCompile Include="core\Contour.cpp" />
     <ClCompile Include="core\edge-coloring.cpp" />
     <ClCompile Include="core\edge-segments.cpp" />
-    <ClCompile Include="core\EdgeHolder.cpp" />
     <ClCompile Include="core\equation-solver.cpp" />
     <ClCompile Include="core\render-sdf.cpp" />
     <ClCompile Include="core\save-bmp.cpp" />
-    <ClCompile Include="core\shape-description.cpp" />
     <ClCompile Include="core\Shape.cpp" />
     <ClCompile Include="core\SignedDistance.cpp" />
     <ClCompile Include="core\Vector2.cpp" />

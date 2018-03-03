@@ -43,7 +43,7 @@ struct FtContext {
 };
 
 static Point2 ftPoint2(const FT_Vector &vector) {
-    return Point2(vector.x/64, vector.y/64);
+    return Point2(vector.x/64., vector.y/64.);
 }
 
 static int ftMoveTo(const FT_Vector *to, void *user) {
@@ -55,21 +55,21 @@ static int ftMoveTo(const FT_Vector *to, void *user) {
 
 static int ftLineTo(const FT_Vector *to, void *user) {
     FtContext *context = reinterpret_cast<FtContext *>(user);
-    context->contour->addEdge(new LinearSegment(context->position, ftPoint2(*to)));
+    context->contour->addEdge(LinearSegment(context->position, ftPoint2(*to)));
     context->position = ftPoint2(*to);
     return 0;
 }
 
 static int ftConicTo(const FT_Vector *control, const FT_Vector *to, void *user) {
     FtContext *context = reinterpret_cast<FtContext *>(user);
-    context->contour->addEdge(new QuadraticSegment(context->position, ftPoint2(*control), ftPoint2(*to)));
+    context->contour->addEdge(QuadraticSegment(context->position, ftPoint2(*control), ftPoint2(*to)));
     context->position = ftPoint2(*to);
     return 0;
 }
 
 static int ftCubicTo(const FT_Vector *control1, const FT_Vector *control2, const FT_Vector *to, void *user) {
     FtContext *context = reinterpret_cast<FtContext *>(user);
-    context->contour->addEdge(new CubicSegment(context->position, ftPoint2(*control1), ftPoint2(*control2), ftPoint2(*to)));
+    context->contour->addEdge(CubicSegment(context->position, ftPoint2(*control1), ftPoint2(*control2), ftPoint2(*to)));
     context->position = ftPoint2(*to);
     return 0;
 }
@@ -139,7 +139,7 @@ bool loadGlyphSlot(Shape &output, FT_GlyphSlot glyph, double *advance) {
     output.contours.clear();
     output.inverseYAxis = false;
     if (advance)
-        *advance = glyph->advance.x/64;
+        *advance = glyph->advance.x/64.;
 
     FtContext context = { };
     context.shape = &output;

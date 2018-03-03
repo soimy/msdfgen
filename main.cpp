@@ -93,48 +93,48 @@ static bool parseAngle(double &value, const char *arg) {
     return false;
 }
 
-static void parseColoring(Shape &shape, const char *edgeAssignment) {
-    unsigned c = 0, e = 0;
-    if (shape.contours.size() < c) return;
-    Contour *contour = &shape.contours[c];
-    bool change = false;
-    bool clear = true;
-    for (const char *in = edgeAssignment; *in; ++in) {
-        switch (*in) {
-            case ',':
-                if (change)
-                    ++e;
-                if (clear)
-                    while (e < contour->edges.size()) {
-                        contour->edges[e]->color = WHITE;
-                        ++e;
-                    }
-                ++c, e = 0;
-                if (shape.contours.size() <= c) return;
-                contour = &shape.contours[c];
-                change = false;
-                clear = true;
-                break;
-            case '?':
-                clear = false;
-                break;
-            case 'C': case 'M': case 'W': case 'Y': case 'c': case 'm': case 'w': case 'y':
-                if (change) {
-                    ++e;
-                    change = false;
-                }
-                if (e < contour->edges.size()) {
-                    contour->edges[e]->color = EdgeColor(
-                        (*in == 'C' || *in == 'c')*CYAN|
-                        (*in == 'M' || *in == 'm')*MAGENTA|
-                        (*in == 'Y' || *in == 'y')*YELLOW|
-                        (*in == 'W' || *in == 'w')*WHITE);
-                    change = true;
-                }
-                break;
-        }
-    }
-}
+//static void parseColoring(Shape &shape, const char *edgeAssignment) {
+//    unsigned c = 0, e = 0;
+//    if (shape.contours.size() < c) return;
+//    Contour *contour = &shape.contours[c];
+//    bool change = false;
+//    bool clear = true;
+//    for (const char *in = edgeAssignment; *in; ++in) {
+//        switch (*in) {
+//            case ',':
+//                if (change)
+//                    ++e;
+//                if (clear)
+//                    while (e < contour->edges.size()) {
+//                        contour->edges[e]->color = WHITE;
+//                        ++e;
+//                    }
+//                ++c, e = 0;
+//                if (shape.contours.size() <= c) return;
+//                contour = &shape.contours[c];
+//                change = false;
+//                clear = true;
+//                break;
+//            case '?':
+//                clear = false;
+//                break;
+//            case 'C': case 'M': case 'W': case 'Y': case 'c': case 'm': case 'w': case 'y':
+//                if (change) {
+//                    ++e;
+//                    change = false;
+//                }
+//                if (e < contour->edges.size()) {
+//                    contour->edges[e]->color = EdgeColor(
+//                        (*in == 'C' || *in == 'c')*CYAN|
+//                        (*in == 'M' || *in == 'm')*MAGENTA|
+//                        (*in == 'Y' || *in == 'y')*YELLOW|
+//                        (*in == 'W' || *in == 'w')*WHITE);
+//                    change = true;
+//                }
+//                break;
+//        }
+//    }
+//}
 
 static void invertColor(Bitmap<FloatRGB> &bitmap) {
     for (int y = 0; y < bitmap.height(); ++y)
@@ -355,9 +355,6 @@ int main(int argc, const char * const *argv) {
         NONE,
         SVG,
         FONT,
-        DESCRIPTION_ARG,
-        DESCRIPTION_STDIN,
-        DESCRIPTION_FILE
     } inputType = NONE;
     enum {
         SINGLE,
@@ -368,7 +365,6 @@ int main(int argc, const char * const *argv) {
     Format format = AUTO;
     const char *input = NULL;
     std::string outputName = "output.png";
-    const char *shapeExport = NULL;
     const char *testRender = NULL;
     const char *testRenderMulti = NULL;
     bool outputSpecified = false;
@@ -447,26 +443,8 @@ int main(int argc, const char * const *argv) {
             argPos += 3;
             continue;
         }
-        ARG_CASE("-defineshape", 1) {
-            inputType = DESCRIPTION_ARG;
-            input = argv[argPos+1];
-            argPos += 2;
-            continue;
-        }
         ARG_CASE("-path", 1) {
             outputPath = argv[argPos + 1];
-            argPos += 2;
-            continue;
-        }
-        ARG_CASE("-stdin", 0) {
-            inputType = DESCRIPTION_STDIN;
-            input = "stdin";
-            argPos += 1;
-            continue;
-        }
-        ARG_CASE("-shapedesc", 1) {
-            inputType = DESCRIPTION_FILE;
-            input = argv[argPos+1];
             argPos += 2;
             continue;
         }
@@ -581,11 +559,6 @@ int main(int argc, const char * const *argv) {
             argPos += 2;
             continue;
         }
-        ARG_CASE("-exportshape", 1) {
-            shapeExport = argv[argPos+1];
-            argPos += 2;
-            continue;
-        }
         ARG_CASE("-testrender", 3) {
             unsigned w, h;
             if (!parseUnsigned(w, argv[argPos+2]) || !parseUnsigned(h, argv[argPos+3]) || !w || !h)
@@ -679,25 +652,6 @@ int main(int argc, const char * const *argv) {
             }
             destroyFont(font);
             deinitializeFreetype(ft);
-            break;
-        }
-        case DESCRIPTION_ARG: {
-            if (!readShapeDescription(input, shape, &skipColoring))
-                ABORT("Parse error in shape description.");
-            break;
-        }
-        case DESCRIPTION_STDIN: {
-            if (!readShapeDescription(stdin, shape, &skipColoring))
-                ABORT("Parse error in shape description.");
-            break;
-        }
-        case DESCRIPTION_FILE: {
-            FILE *file = fopen(input, "r");
-            if (!file)
-                ABORT("Failed to load shape description file.");
-            if (!readShapeDescription(file, shape, &skipColoring))
-                ABORT("Parse error in shape description.");
-            fclose(file);
             break;
         }
         default:
@@ -833,8 +787,8 @@ int main(int argc, const char * const *argv) {
         double dummy;
         SignedDistance minDistance;
         for (std::vector<Contour>::const_iterator contour = shape.contours.begin(); contour != shape.contours.end(); ++contour)
-            for (std::vector<EdgeHolder>::const_iterator edge = contour->edges.begin(); edge != contour->edges.end(); ++edge) {
-                SignedDistance distance = (*edge)->signedDistance(p, dummy);
+            for (std::vector<EdgeSegment>::const_iterator edge = contour->edges.begin(); edge != contour->edges.end(); ++edge) {
+                SignedDistance distance = edge->signedDistance(p, dummy);
                 if (distance < minDistance)
                     minDistance = distance;
             }
@@ -845,15 +799,6 @@ int main(int argc, const char * const *argv) {
         invertColor(msdf);
     }
 
-    // Save output
-    if (shapeExport) {
-        FILE *file = fopen(shapeExport, "w");
-        if (file) {
-            writeShapeDescription(file, shape);
-            fclose(file);
-        } else
-            puts("Failed to write shape export file.");
-    }
     const char *error = NULL;
     switch (mode) {
         case SINGLE:
