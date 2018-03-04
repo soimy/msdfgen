@@ -149,7 +149,7 @@ float CubicSegment::signedDistance(Point2 origin) const {
     }
     // Iterative minimum distance search
     for (int i = 0; i <= MSDFGEN_CUBIC_SEARCH_STARTS; ++i) {
-        double t = (double) i/MSDFGEN_CUBIC_SEARCH_STARTS;
+        double t = (double) i*MSDFGEN_CUBIC_SEARCH_STARTS_REV;
         for (int step = 0;; ++step) {
             Vector2 qpt = point(t)-origin;
             double distance = qpt.squareLength();

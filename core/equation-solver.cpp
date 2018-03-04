@@ -29,6 +29,26 @@ int solveQuadratic(double x[2], double a, double aRev, double b, double c) {
         return 0;
 }
 
+static float acbrt(float x0) {
+	union { int ix; float x; };
+
+	x = x0;                      // x can be viewed as int.
+	ix = ix / 4 + ix / 16;           // Approximate divide by 3.
+	ix = ix + ix / 16;
+	ix = ix + ix / 256;
+	ix = 0x2a5137a0 + ix;        // Initial guess.
+	x = 0.33333333f*(2.0f*x + x0 / (x*x));  // Newton step.
+	return x;
+}
+
+static float acbrt2(float x0) {
+	union { int ix; float x; };
+
+	x = x0;                      // x can be viewed as int.
+	ix = 0x2a51067f + ix / 3;      // Initial guess.
+	return x;
+}
+
 int solveCubicNormed(double *x, double a, double b, double c) {
 	static constexpr double oneThird = 1.0/3.0;
 	static constexpr double oneNinth = 1.0/9.0;
@@ -50,8 +70,8 @@ int solveCubicNormed(double *x, double a, double b, double c) {
         x[2] = q*cos((t-2*M_PI)*oneThird)-a;
         return 3;
     } else {
-        A = -pow(fabs(r)+sqrt(r2-q3), oneThird);
-        if (r < 0) A = -A;
+        A = acbrt2(fabs(r)+sqrt(r2-q3));
+        if (r >= 0) A = -A;
         B = A == 0 ? 0 : q/A;
         a *= oneThird;
         x[0] = (A+B)-a;

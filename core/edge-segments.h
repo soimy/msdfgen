@@ -10,6 +10,7 @@ namespace msdfgen {
 
 // Parameters for iterative search of closest point on a cubic Bezier curve. Increase for higher precision.
 #define MSDFGEN_CUBIC_SEARCH_STARTS 4
+#define MSDFGEN_CUBIC_SEARCH_STARTS_REV 0.25
 #define MSDFGEN_CUBIC_SEARCH_STEPS 4
 
 class EdgeSegment;
