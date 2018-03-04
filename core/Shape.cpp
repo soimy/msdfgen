@@ -76,4 +76,13 @@ void Shape::bounds(double &l, double &b, double &r, double &t) const {
         contour->bounds(l, b, r, t);
 }
 
+void Shape::mergeContours()
+{
+	if (contours.size() < 2)
+		return;
+	for (size_t index = 1, size = contours.size(); index < size; ++index)
+		contours.front().edges.insert(contours.front().edges.begin(), contours[index].edges.begin(), contours[index].edges.end());
+	contours.resize(1);
+}
+
 }

@@ -36,12 +36,11 @@ struct WindingSpanner: public CrossingCallback {
 	}
     
     void collect(const Shape& shape, const Point2& p) {
+		assert(shape.contours.size() == 1);
         fillRule = shape.fillRule;
         crossings.clear();
-        for (const Contour &contour : shape.contours) {
-            for (const EdgeSegment &e : contour.edges) {
-                e.crossings(p, this);
-            }
+        for (const EdgeSegment &e : shape.contours[0].edges) {
+            e.crossings(p, this);
         }
         
         // Make sure we've collected them all in increasing x order.
@@ -98,30 +97,30 @@ namespace
 }
 
 void generateSDF(Bitmap<unsigned char> &output, const Shape &shape, double bound_l, double range, const Vector2 &scale, const Vector2 &translate) {
-    int contourCount = shape.contours.size();
-    int w = output.width(), h = output.height();
+	assert(shape.contours.size() == 1);
+	int w = output.width(), h = output.height();
 	Vector2 scaleRev = 1.0 / scale;
 	double rangeRev = 1.0 / range;
+	double dy = 0.5;
+	bound_l -= 0.5;
     
 	Spanner.clear();
     
-	for (int y = 0; y < h; ++y) {
+	for (int y = 0; y < h; ++y, dy += 1.0) {
+		double dx = 0.5;
 		int row = shape.inverseYAxis ? h-y-1 : y;
 
 		// Start slightly off the -X edge so we ensure we find all spans.
-		Spanner.collect(shape, Vector2(bound_l - 0.5, (y + 0.5)*scaleRev.y - translate.y));
+		Spanner.collect(shape, Vector2(bound_l, dy*scaleRev.y - translate.y));
 
-		for (int x = 0; x < w; ++x) {
-			Point2 p = Vector2(x + .5, y + .5)*scaleRev - translate;
-
+		for (int x = 0; x < w; ++x, dx += 1.0) {
+			Point2 p = Vector2(dx, dy)*scaleRev - translate;
 			double minDistance = INFINITY;
 
-			for (const Contour &contour : shape.contours) {
-				for (const EdgeSegment &edge : contour.edges) {
-					double distance = edge.signedDistance(p);
-					if (distance < minDistance)
-						minDistance = distance;
-				}
+			for (const EdgeSegment &edge : shape.contours[0].edges) {
+				double distance = edge.signedDistance(p);
+				if (distance < minDistance)
+					minDistance = distance;
 			}
 
 			minDistance = approxSquareRoot(minDistance);
