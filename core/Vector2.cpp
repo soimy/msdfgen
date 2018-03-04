@@ -19,7 +19,8 @@ Vector2 Vector2::normalize(bool allowZero) const {
     double len = length();
     if (len == 0)
         return Vector2(0, !allowZero);
-    return Vector2(x/len, y/len);
+	double lenRev = 1.0 / len;
+    return Vector2(x*lenRev, y*lenRev);
 }
 
 Vector2 Vector2::getOrthogonal(bool polarity) const {
@@ -30,7 +31,8 @@ Vector2 Vector2::getOrthonormal(bool polarity, bool allowZero) const {
     double len = length();
     if (len == 0)
         return polarity ? Vector2(0, !allowZero) : Vector2(0, -!allowZero);
-    return polarity ? Vector2(-y/len, x/len) : Vector2(y/len, -x/len);
+	double lenRev = 1.0 / len;
+    return polarity ? Vector2(-y*lenRev, x*lenRev) : Vector2(y*lenRev, -x* lenRev);
 }
 
 Vector2 Vector2::project(const Vector2 &vector, bool positive) const {

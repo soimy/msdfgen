@@ -106,7 +106,7 @@ void generateSDF(Bitmap<unsigned char> &output, const Shape &shape, double bound
 	Spanner.clear();
     
 	for (int y = 0; y < h; ++y) {
-		int row = shape.inverseYAxis ? h - y - 1 : y;
+		int row = shape.inverseYAxis ? h-y-1 : y;
 
 		// Start slightly off the -X edge so we ensure we find all spans.
 		Spanner.collect(shape, Vector2(bound_l - 0.5, (y + 0.5)*scaleRev.y - translate.y));
@@ -124,7 +124,7 @@ void generateSDF(Bitmap<unsigned char> &output, const Shape &shape, double bound
 				}
 			}
 
-			minDistance = sqrt(minDistance);
+			minDistance = approxSquareRoot(minDistance);
 			minDistance *= Spanner.advanceTo(p.x);
 			output(x, row) = (unsigned char)std::clamp<double>((minDistance * rangeRev + 0.5) * 0x100, 0, 255);
 		}
