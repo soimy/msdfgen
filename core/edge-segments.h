@@ -3,7 +3,7 @@
 
 #include "Vector2.h"
 #include "SignedDistance.h"
-#include "EdgeColor.h"
+//#include "EdgeColor.h"
 #include <cassert>
 
 namespace msdfgen {

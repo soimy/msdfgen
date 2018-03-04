@@ -206,11 +206,11 @@ void CubicSegment::bounds(double &l, double &b, double &r, double &t) const {
     Vector2 a2 = p[3]-3*p[2]+3*p[1]-p[0];
     double params[2];
     int solutions;
-    solutions = solveQuadratic(params, a2.x, a1.x, a0.x);
+    solutions = solveQuadratic(params, a2.x, 1.0/a2.x, a1.x, a0.x);
     for (int i = 0; i < solutions; ++i)
         if (params[i] > 0 && params[i] < 1)
             pointBounds(point(params[i]), l, b, r, t);
-    solutions = solveQuadratic(params, a2.y, a1.y, a0.y);
+    solutions = solveQuadratic(params, a2.y, 1.0/a2.y, a1.y, a0.y);
     for (int i = 0; i < solutions; ++i)
         if (params[i] > 0 && params[i] < 1)
             pointBounds(point(params[i]), l, b, r, t);

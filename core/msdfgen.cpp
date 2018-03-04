@@ -28,13 +28,19 @@ struct WindingSpanner: public CrossingCallback {
     WindingSpanner(): curW(0) {
         curSpan = crossings.cend();
     }
+
+	void clear() {
+		curW = 0;
+		crossings.clear();
+		curSpan = crossings.cend();
+	}
     
     void collect(const Shape& shape, const Point2& p) {
         fillRule = shape.fillRule;
         crossings.clear();
-        for (std::vector<Contour>::const_iterator contour = shape.contours.cbegin(); contour != shape.contours.cend(); ++contour) {
-            for (std::vector<EdgeSegment>::const_iterator e = contour->edges.cbegin(); e != contour->edges.cend(); ++e) {
-                e->crossings(p, this);
+        for (const Contour &contour : shape.contours) {
+            for (const EdgeSegment &e : contour.edges) {
+                e.crossings(p, this);
             }
         }
         
@@ -86,45 +92,43 @@ private:
     }
 };
 
-void generateSDF(Bitmap<unsigned char> &output, const Shape &shape, double bound_l, double bound_t, double bound_b, double bound_r, double range, const Vector2 &scale, const Vector2 &translate) {
+namespace
+{
+	WindingSpanner Spanner;
+}
+
+void generateSDF(Bitmap<unsigned char> &output, const Shape &shape, double bound_l, double range, const Vector2 &scale, const Vector2 &translate) {
     int contourCount = shape.contours.size();
     int w = output.width(), h = output.height();
+	Vector2 scaleRev = 1.0 / scale;
+	double rangeRev = 1.0 / range;
     
-    WindingSpanner spanner;
+	Spanner.clear();
     
-#ifdef MSDFGEN_USE_OPENMP
-#pragma omp parallel
-#endif
-    {
-#ifdef MSDFGEN_USE_OPENMP
-#pragma omp for
-#endif
-        for (int y = 0; y < h; ++y) {
-            int row = shape.inverseYAxis ? h-y-1 : y;
-            
-            // Start slightly off the -X edge so we ensure we find all spans.
-            spanner.collect(shape, Vector2(bound_l - 0.5, (y + 0.5)/scale.y - translate.y));
-            
-            for (int x = 0; x < w; ++x) {
-                Point2 p = Vector2(x+.5, y+.5)/scale-translate;
-                
-                double minDistance = INFINITY;
-                
-                std::vector<Contour>::const_iterator contour = shape.contours.begin();
-                for (int i = 0; i < contourCount; ++i, ++contour) {
-                    for (std::vector<EdgeSegment>::const_iterator edge = contour->edges.begin(); edge != contour->edges.end(); ++edge) {
-                        double distance = edge->signedDistance(p);
-                        if (distance < minDistance)
-                            minDistance = distance;
-                    }
-                }
-                
-				minDistance = sqrt(minDistance);
-                minDistance *= spanner.advanceTo(p.x);
-                output(x, row) = (unsigned char)std::lround(std::clamp<double>((minDistance / range + 0.5) * 0x100, 0, 255));
-            }
-        }
-    }
+	for (int y = 0; y < h; ++y) {
+		int row = shape.inverseYAxis ? h - y - 1 : y;
+
+		// Start slightly off the -X edge so we ensure we find all spans.
+		Spanner.collect(shape, Vector2(bound_l - 0.5, (y + 0.5)*scaleRev.y - translate.y));
+
+		for (int x = 0; x < w; ++x) {
+			Point2 p = Vector2(x + .5, y + .5)*scaleRev - translate;
+
+			double minDistance = INFINITY;
+
+			for (const Contour &contour : shape.contours) {
+				for (const EdgeSegment &edge : contour.edges) {
+					double distance = edge.signedDistance(p);
+					if (distance < minDistance)
+						minDistance = distance;
+				}
+			}
+
+			minDistance = sqrt(minDistance);
+			minDistance *= Spanner.advanceTo(p.x);
+			output(x, row) = (unsigned char)std::clamp<double>((minDistance * rangeRev + 0.5) * 0x100, 0, 255);
+		}
+	}
 }
 
 //static inline bool pixelClash(const FloatRGB &a, const FloatRGB &b, double threshold) {
@@ -187,13 +191,7 @@ void generateSDF(Bitmap<unsigned char> &output, const Shape &shape, double bound
 //    double bound_l, bound_t, bound_b, bound_r;
 //    shape.bounds(bound_l, bound_b, bound_r, bound_t);
 //    
-//#ifdef MSDFGEN_USE_OPENMP
-//#pragma omp parallel
-//#endif
 //    {
-//#ifdef MSDFGEN_USE_OPENMP
-//#pragma omp for
-//#endif
 //        for (int y = 0; y < h; ++y) {
 //            int row = shape.inverseYAxis ? h-y-1 : y;
 //            
@@ -238,15 +236,9 @@ void generateSDF(Bitmap<unsigned char> &output, const Shape &shape, double bound
 //    double bound_l, bound_t, bound_b, bound_r;
 //    shape.bounds(bound_l, bound_b, bound_r, bound_t);
 //    
-//#ifdef MSDFGEN_USE_OPENMP
-//#pragma omp parallel
-//#endif
 //    {
 //        std::vector<MultiDistance> contourSD;
 //        contourSD.resize(contourCount);
-//#ifdef MSDFGEN_USE_OPENMP
-//#pragma omp for
-//#endif
 //        for (int y = 0; y < h; ++y) {
 //            int row = shape.inverseYAxis ? h-y-1 : y;
 //            

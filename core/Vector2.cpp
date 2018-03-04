@@ -3,25 +3,12 @@
 
 namespace msdfgen {
 
-Vector2::Vector2(double val) : x(val), y(val) { }
-
-Vector2::Vector2(double x, double y) : x(x), y(y) { }
-
 void Vector2::reset() {
     x = 0, y = 0;
 }
 
 void Vector2::set(double x, double y) {
     Vector2::x = x, Vector2::y = y;
-}
-
-double Vector2::squareLength() const
-{
-	return x*x+y*y;
-}
-
-double Vector2::length() const {
-    return sqrt(x*x+y*y);
 }
 
 double Vector2::direction() const {
@@ -134,14 +121,6 @@ Vector2 & Vector2::operator*=(double value) {
 Vector2 & Vector2::operator/=(double value) {
     x /= value, y /= value;
     return *this;
-}
-
-double dotProduct(const Vector2 &a, const Vector2 &b) {
-    return a.x*b.x+a.y*b.y;
-}
-
-double crossProduct(const Vector2 &a, const Vector2 &b) {
-    return a.x*b.y-a.y*b.x;
 }
 
 Vector2 operator*(double value, const Vector2 &vector) {

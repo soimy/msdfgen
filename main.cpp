@@ -754,7 +754,7 @@ int main(int argc, const char * const *argv) {
     switch (mode) {
         case SINGLE: {
             sdf = Bitmap<uint8_t>(width, height);
-            generateSDF(sdf, shape, bounds.l, bounds.t, bounds.b, bounds.r, range, scale, translate);
+            generateSDF(sdf, shape, bounds.l, range, scale, translate);
             break;
         }
         //case PSEUDO:
