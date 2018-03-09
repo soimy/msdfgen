@@ -85,7 +85,7 @@ Vector2 CubicSegment::direction(double param) const {
     return tangent;
 }
 
-float LinearSegment::signedDistance(Point2 origin) const {
+double LinearSegment::signedDistance(Point2 origin) const {
 	double param;
     Vector2 aq = origin-p[0];
     Vector2 ab = p[1]-p[0];
@@ -101,7 +101,7 @@ float LinearSegment::signedDistance(Point2 origin) const {
     return endpointDistance;
 }
 
-float QuadraticSegment::signedDistance(Point2 origin) const {
+double QuadraticSegment::signedDistance(Point2 origin) const {
     Vector2 qa = p[0]-origin;
     Vector2 ab = p[1]-p[0];
     Vector2 br = p[0]+p[2]-p[1]-p[1];
@@ -132,7 +132,7 @@ float QuadraticSegment::signedDistance(Point2 origin) const {
 	return minDistance;
 }
 
-float CubicSegment::signedDistance(Point2 origin) const {
+double CubicSegment::signedDistance(Point2 origin) const {
     Vector2 qa = p[0]-origin;
     Vector2 ab = p[1]-p[0];
     Vector2 br = p[2]-p[1]-ab;

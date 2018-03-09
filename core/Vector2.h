@@ -29,7 +29,7 @@ struct Vector2 {
 	}
     /// Returns the vector's length.
     double length() const {
-		return approxSquareRoot(x*x + y * y);
+		return approxSquareRoot(x*x + y*y);
 	}
     /// Returns the angle of the vector in radians (atan2).
     double direction() const;

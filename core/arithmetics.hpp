@@ -7,8 +7,10 @@
 
 namespace msdfgen {
 
-inline float approxSquareRoot(float x)
+inline float approxSquareRoot(double dx)
 {
+    float x = (float)dx;
+
 	const float xhalf = 0.5f*x;
 
 	union // get bits for floating value
