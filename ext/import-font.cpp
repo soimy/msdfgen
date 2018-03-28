@@ -29,7 +29,7 @@ class FontHandle {
     friend void destroyFont(FontHandle *font);
     friend bool getFontScale(double &output, FontHandle *font);
     friend bool getFontWhitespaceWidth(double &spaceAdvance, double &tabAdvance, FontHandle *font);
-    friend bool loadGlyph(Shape &output, FontHandle *font, int unicode, double *advance);
+    friend Shape loadGlyph(FontHandle *font, int unicode, double *advance);
     friend bool getKerning(double &output, FontHandle *font, int unicode1, int unicode2);
 
     FT_Face face;
@@ -123,21 +123,22 @@ bool getFontWhitespaceWidth(double &spaceAdvance, double &tabAdvance, FontHandle
     return true;
 }
 
-bool loadGlyph(Shape &output, FontHandle *font, int unicode, double *advance) {
+Shape loadGlyph(FontHandle *font, int unicode, double *advance) {
     if (!font)
-        return false;
+        return Shape();
     FT_Error error = FT_Load_Char(font->face, unicode, FT_LOAD_NO_SCALE);
     if (error)
-        return false;
+        return Shape();
 
-    return loadGlyphSlot(output, font->face->glyph, advance);
+    return loadGlyphSlot(font->face->glyph, advance);
 }
 
-bool loadGlyphSlot(Shape &output, FT_GlyphSlot glyph, double *advance) {
+Shape loadGlyphSlot(FT_GlyphSlot glyph, double *advance) {
     if (!glyph)
-        return false;
-    output.contours.clear();
-    output.inverseYAxis = false;
+        return Shape();
+
+	Shape output;
+	output.inverseYAxis = false;
     if (advance)
         *advance = glyph->advance.x/64.;
 
@@ -152,8 +153,8 @@ bool loadGlyphSlot(Shape &output, FT_GlyphSlot glyph, double *advance) {
     ftFunctions.delta = 0;
     FT_Error error = FT_Outline_Decompose(&glyph->outline, &ftFunctions, &context);
     if (error)
-        return false;
-    return true;
+        return Shape();
+    return output;
 }
 
 bool getKerning(double &output, FontHandle *font, int unicode1, int unicode2) {
