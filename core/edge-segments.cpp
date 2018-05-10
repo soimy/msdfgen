@@ -322,6 +322,12 @@ static int crossQuad(const Point2& r, const Point2& p0, const Point2& c0, const 
     if (r.x >= max(p0.x, max(c0.x, p1.x)))
         return 0;
 
+	if (p1.y == p0.y && c0.y == p0.y) {
+		// in fact, this segment is a line and since r.y == p1.y == p0.y == c0.y,
+		// the ray has an infinite number of the intersection points
+		return 0;
+	}
+
     // Recursively subdivide the curve to find the intersection point(s). If we haven't
     // converged on a solution by a given depth, just treat it as a linear segment
     // and call the approximation good enough.
