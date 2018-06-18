@@ -11,6 +11,12 @@ using namespace std; // to access signbit, not all libraries put signbit in std
 
 namespace msdfgen {
 
+
+const char* getVersion() {
+    return MSDFGEN_VERSION;
+}
+
+
 struct MultiDistance {
     double r, g, b;
     double med;

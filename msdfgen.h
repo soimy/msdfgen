@@ -23,12 +23,15 @@
 #include "core/render-sdf.h"
 #include "core/save-bmp.h"
 
-#define MSDFGEN_VERSION "1.5"
+#define MSDFGEN_VERSION "1.5.1drjnmrh"
 
 namespace msdfgen {
 
 /// Generates a conventional single-channel signed distance field.
 void generateSDF(Bitmap<unsigned char> &output, const Shape &shape, double bound_l, double range, const Vector2 &scale, const Vector2 &translate);
+
+/// Gets current version
+const char* getVersion();
 
 /// Generates a single-channel signed pseudo-distance field.
 //void generatePseudoSDF(Bitmap<float> &output, const Shape &shape, double range, const Vector2 &scale, const Vector2 &translate);
