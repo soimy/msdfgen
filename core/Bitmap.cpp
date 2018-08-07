@@ -71,7 +71,12 @@ const T & Bitmap<T>::operator()(int x, int y) const {
     return content[y*w+x];
 }
 
-template class Bitmap<float>;
+template <typename T>
+T* Bitmap<T>::getContent() const {
+    return content;
+}
+
+    template class Bitmap<float>;
 template class Bitmap<FloatRGB>;
 
 }
