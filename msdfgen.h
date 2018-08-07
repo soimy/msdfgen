@@ -1,6 +1,12 @@
 
 #pragma once
 
+#if _MSC_VER // this is defined when compiling with Visual Studio
+#define EXPORT_API __declspec(dllexport) // Visual Studio needs annotating exported functions with this
+#else
+#define EXPORT_API // XCode does not need annotating exported functions, so define is empty
+#endif
+
 /*
  * MULTI-CHANNEL SIGNED DISTANCE FIELD GENERATOR v1.5 (2017-07-23)
  * ---------------------------------------------------------------
@@ -41,5 +47,20 @@ void generateMSDF(Bitmap<FloatRGB> &output, const Shape &shape, double range, co
 void generateSDF_legacy(Bitmap<float> &output, const Shape &shape, double range, const Vector2 &scale, const Vector2 &translate);
 void generatePseudoSDF_legacy(Bitmap<float> &output, const Shape &shape, double range, const Vector2 &scale, const Vector2 &translate);
 void generateMSDF_legacy(Bitmap<FloatRGB> &output, const Shape &shape, double range, const Vector2 &scale, const Vector2 &translate, double edgeThreshold = 1.00000001);
+
+}
+
+extern "C" {
+
+struct Element {
+    int32_t type;
+    float x, y, x1, y1;
+};
+
+struct Bounds {
+    float minX, minY, maxX, maxY;
+};
+
+EXPORT_API const char * createMsdfTexture(float *data, int width, int height, msdfgen::Vector2 translation, double pxRange, const msdfgen::Vector2 scale, const Element * elements, size_t elementCount, Bounds bounds);
 
 }
