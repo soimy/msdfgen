@@ -68,7 +68,12 @@ file(GLOB_RECURSE msdfgen_SOURCES
 folderize_sources(msdfgen_HEADERS ${CMAKE_SOURCE_DIR})
 folderize_sources(msdfgen_SOURCES ${CMAKE_SOURCE_DIR})
 
-add_library(lib_msdfgen SHARED ${msdfgen_SOURCES} ${msdfgen_HEADERS})
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+	add_library(lib_msdfgen MODULE ${msdfgen_SOURCES} ${msdfgen_HEADERS})
+	set_target_properties(lib_msdfgen PROPERTIES BUNDLE TRUE)
+else()
+	add_library(lib_msdfgen SHARED ${msdfgen_SOURCES} ${msdfgen_HEADERS})
+endif()
 set_target_properties(lib_msdfgen PROPERTIES OUTPUT_NAME msdfgen)
 # target_link_libraries(lib_msdfgen ${FREETYPE_LIBRARIES})
 
