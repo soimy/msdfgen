@@ -525,7 +525,7 @@ const char* createMsdfTexture(float *data, int width, int height, msdfgen::Vecto
 
     bool doInvert = false;
     { // This is taken directly from the msdfgen cli implementation
-        msdfgen::Point2 p(left - (right - left) - 1, bottom - (top - bottom) - 1);
+        const msdfgen::Point2 p(left - (right - left) - 1, bottom - (top - bottom) - 1);
         double dummy;
         msdfgen::SignedDistance minDistance;
         for (const auto &iContour : shape.contours) {
@@ -545,11 +545,10 @@ const char* createMsdfTexture(float *data, int width, int height, msdfgen::Vecto
     if (doInvert) {
         const auto bitmapData = bitmap.getContent();
         for (int i = 0; i < width * height; ++i) {
-            int index = i * sizeof(msdfgen::FloatRGB);
-            data[i + 0] = 1.f - bitmapData[i].r;
-            data[i + 1] = 1.f - bitmapData[i].g;
-            data[i + 2] = 1.f - bitmapData[i].b;
-            data[i + 3] = 1.f;
+            const int index = i * 3;
+            data[index + 0] = 1.f - bitmapData[i].r;
+            data[index + 1] = 1.f - bitmapData[i].g;
+            data[index + 2] = 1.f - bitmapData[i].b;
         }
     } else {
         memcpy(data, bitmap.getContent(), width * height * sizeof(msdfgen::FloatRGB));
