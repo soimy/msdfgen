@@ -12,3 +12,4 @@ output.png
 render.png
 out/
 build_xcode/
+build/
