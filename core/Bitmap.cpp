@@ -86,6 +86,12 @@ const T * Bitmap<T>::contentMemory() const
 	return content;
 }
 
+
+template <typename T>
+T* Bitmap<T>::getContent() const {
+    return content;
+}
+
 template class Bitmap<float>;
 template class Bitmap<FloatRGB>;
 template class Bitmap<unsigned char>;
