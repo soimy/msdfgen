@@ -33,6 +33,7 @@ public:
 
 	T *takeMemoryAway();
 	const T *contentMemory() const;
+    T* getContent() const;
 
 private:
     T *content;

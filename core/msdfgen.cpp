@@ -6,7 +6,6 @@
 
 #include "arithmetics.hpp"
 #include <algorithm> // for std::sort
-
 using namespace std; // to access signbit, not all libraries put signbit in std
 
 namespace msdfgen {
@@ -331,4 +330,119 @@ void generateSDF(Bitmap<unsigned char> &output, const Shape &shape, double bound
 //        msdfErrorCorrection(output, edgeThreshold/(scale*range));
 //}
 
+}
+
+const char* createMsdfTexture(float *data, int width, int height, msdfgen::Vector2 translation, double pxRange, const msdfgen::Vector2 scale, const Element *elements, size_t elementCount, Bounds bounds) {
+    msdfgen::Shape shape;
+    msdfgen::Contour *msdfgenContour = nullptr;
+    float x0 = 0.f, y0 = 0.f;
+
+    const size_t cn = 100000;
+    static char buffer[cn];
+    int cx = 0;
+
+    cx += snprintf(buffer + cx, cn - cx, "Texture Dimensions: %ix%i\n", width, height);
+    cx += snprintf(buffer + cx, cn - cx, "Bounds: %.2fx%.2f - %.2fx%.2f\n", bounds.minX, bounds.minY, bounds.maxX, bounds.maxY);
+    cx += snprintf(buffer + cx, cn - cx, "Element count : %zu\n", elementCount);
+    cx += snprintf(buffer + cx, cn - cx, "Scale: %.2f, %.2f | Translation: %.2f, %.2f\n", scale.x, scale.y, translation.x, translation.y);
+
+    for (size_t i = 0; i < elementCount; i++) {
+        const Element &element = elements[i];
+        //cx += snprintf(buffer + cx, cn - cx, "Type: %i\n", element.type);
+        switch (element.type) {
+        case 0: // MoveTo
+        {
+            const auto x = element.x;
+            const auto y = element.y;
+
+            msdfgenContour = &shape.addContour();
+
+            //cx += snprintf(buffer + cx, cn - cx, "Move to x: %.2f, y: %.2f\n", x, y);
+
+            x0 = x;
+            y0 = y;
+            break;
+        }
+        case 1: // LineTo
+        {
+            const auto x = element.x;
+            const auto y = element.y;
+
+            msdfgenContour->addEdge({ { x0, y0 },{ x, y } });
+
+            //cx += snprintf(buffer + cx, cn - cx, "Line to x: %.2f, y: %.2f\n", x, y);
+
+            x0 = x;
+            y0 = y;
+            break;
+        }
+        case 2: // QuadTo
+        {
+            const auto x = element.x;
+            const auto y = element.y;
+
+            const auto x1 = element.x1;
+            const auto y1 = element.y1;
+
+            msdfgenContour->addEdge({ { x0, y0 },{ x, y },{ x1, y1 } });
+
+            //cx += snprintf(buffer + cx, cn - cx, "Quad to x: %.2f, y: %.2f, x1: %.2f, y1: %.2f\n", x, y, x1, y1);
+
+            x0 = x1;
+            y0 = y1;
+            break;
+        }
+        default:
+        {
+            //cx += snprintf(buffer + cx, cn - cx, "DEFAULT\n");
+            break;
+        }
+        }
+    }
+
+    double left = 0.0;
+    double bottom = 0.0;
+    double right = 0.0;
+    double top = 0.0;
+    shape.bounds(left, bottom, right, top);
+    cx += snprintf(buffer + cx, cn - cx, "Computed shape bounds: %.5f, %.5f - %.5f, %.5f\n", left, bottom, right, top);
+
+    const double angleThreshold = 3.0;
+    msdfgen::edgeColoringSimple(shape, angleThreshold);
+
+    msdfgen::Bitmap<msdfgen::FloatRGB> bitmap(width, height);
+    msdfgen::generateMSDF(bitmap, shape, pxRange, scale, translation);
+
+    bool doInvert = false;
+    { // This is taken directly from the msdfgen cli implementation
+        const msdfgen::Point2 p(left - (right - left) - 1, bottom - (top - bottom) - 1);
+        double dummy;
+        msdfgen::SignedDistance minDistance;
+        for (const auto &iContour : shape.contours) {
+            for (const auto &edge : iContour.edges) {
+                const msdfgen::SignedDistance distance = edge->signedDistance(p, dummy);
+                if (distance < minDistance)
+                    minDistance = distance;
+            }
+        }
+        if (minDistance.distance <= 0) {
+            doInvert = true;
+        }
+    }
+
+    cx += snprintf(buffer + cx, cn - cx, "Inverted: %i\n", doInvert);
+
+    if (doInvert) {
+        const auto bitmapData = bitmap.getContent();
+        for (int i = 0; i < width * height; ++i) {
+            const int index = i * 3;
+            data[index + 0] = 1.f - bitmapData[i].r;
+            data[index + 1] = 1.f - bitmapData[i].g;
+            data[index + 2] = 1.f - bitmapData[i].b;
+        }
+    } else {
+        memcpy(data, bitmap.getContent(), width * height * sizeof(msdfgen::FloatRGB));
+    }
+
+    return buffer;
 }

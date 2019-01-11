@@ -215,3 +215,10 @@ GeneratedArtifacts/
 _Pvt_Extensions/
 ModelManifest.xml
 Msdfgen.VC.db
+
+# old stuff?
+*.VC.opendb
+output.png
+render.png
+out/
+build_xcode/
